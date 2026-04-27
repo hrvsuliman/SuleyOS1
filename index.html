@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suleyman's Life OS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* ✨ GLOBAL THEMES ✨ */
+        :root {
+            --bg-color-1: #a1c4fd; --bg-color-2: #c2e9fb;
+            --wave-color: rgba(255, 255, 255, 0.4);
+            --text-main: #ffffff; --text-accent: #e0f2fe; --text-dark: #1e3a8a;
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --icon-gradient-1: #4facfe; --icon-gradient-2: #00f2fe;
+        }
+
+        [data-theme="sakura"] { --bg-color-1: #ffb7b2; --bg-color-2: #ffdac1; --text-accent: #ffe4e6; --text-dark: #881337; --icon-gradient-1: #ff758c; --icon-gradient-2: #ff7eb3; }
+        [data-theme="midnight"] { --bg-color-1: #0f2027; --bg-color-2: #203a43; --text-accent: #bae6fd; --text-dark: #082f49; --icon-gradient-1: #00c6ff; --icon-gradient-2: #0072ff; --wave-color: rgba(0, 229, 255, 0.1); }
+        [data-theme="forest"] { --bg-color-1: #2d6a4f; --bg-color-2: #1b4332; --text-accent: #b7e4c7; --text-dark: #081c15; --icon-gradient-1: #40916c; --icon-gradient-2: #52b788; --wave-color: rgba(255, 255, 255, 0.15); }
+
+        body { font-family: 'Varela Round', sans-serif; background: linear-gradient(135deg, var(--bg-color-1) 0%, var(--bg-color-2) 100%); color: var(--text-main); margin: 0; padding: 0; min-height: 100vh; overflow: hidden; transition: background 0.8s ease; }
+
+        /* WAVES & WEATHER */
+        .wave-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; }
+        .wave { position: absolute; background: linear-gradient(to top, var(--wave-color), transparent); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; filter: blur(8px); animation: wave-flow 15s infinite linear alternate; transition: background 0.8s ease; }
+        .wave:nth-child(1) { width: 150vw; height: 150vh; top: -50%; left: -25%; animation-duration: 20s; }
+        .wave:nth-child(2) { width: 120vw; height: 120vh; top: -20%; left: -10%; animation-duration: 25s; animation-direction: reverse; }
+        @keyframes wave-flow { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(180deg) scale(1.1); } }
+
+        .floating-item { position: absolute; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 2px solid rgba(255,255,255,0.8); animation: float-up-down 8s ease-in-out infinite alternate; z-index: -1; opacity: 0.7; object-fit: cover; pointer-events: none; }
+        .float-1 { top: 15%; left: 10%; width: 80px; height: 80px; animation-duration: 7s; }
+        .float-2 { bottom: 20%; right: 15%; width: 100px; height: 100px; animation-duration: 9s; animation-delay: 1s; }
+        .float-3 { top: 30%; right: 10%; width: 60px; height: 60px; animation-duration: 5s; animation-delay: 2s; border-radius: 50%; }
+        @keyframes float-up-down { 0% { transform: translateY(0px) rotate(-5deg); } 100% { transform: translateY(-30px) rotate(5deg); } }
+
+        /* ADJUSTABLE WEATHER LAYER */
+        #weather-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; overflow: hidden; transition: opacity 0.3s; opacity: 0.5; } /* Opacity controlled by slider! */
+        .rain-drop { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.9)); width: 3px; border-radius: 2px; animation: rain-fall linear infinite; }
+        @keyframes rain-fall { 0% { transform: translateY(-100px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
+        .cloud-puff { position: absolute; background: rgba(255,255,255,0.6); border-radius: 50%; filter: blur(25px); animation: cloud-drift linear infinite; }
+        @keyframes cloud-drift { 0% { transform: translateX(-300px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(110vw); opacity: 0; } }
+        .sun-flare { position: absolute; top: -50px; right: -50px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255, 235, 150, 0.6) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; filter: blur(20px); animation: sun-pulse 6s ease-in-out infinite alternate; }
+        @keyframes sun-pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.15); opacity: 1; } }
+
+        /* WIPE TRANSITION */
+        #smooth-wipe { position: fixed; top: 0; left: 100%; width: 120vw; height: 100vh; background: linear-gradient(to right, rgba(255,255,255,0) 0%, var(--bg-color-1) 15%, var(--icon-gradient-1) 50%, var(--bg-color-2) 85%, rgba(255,255,255,0) 100%); z-index: 10000; pointer-events: none; opacity: 0; box-shadow: 0 0 50px rgba(0,0,0,0.1); }
+        .view { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; transition: transform 0.4s ease, opacity 0.4s ease; }
+
+        /* DASHBOARD */
+        .banner { position: relative; background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 100%); height: 250px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid var(--glass-border); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); backdrop-filter: blur(5px); z-index: 1; }
+        h1 { font-size: 3.5rem; margin: 0; text-shadow: 0px 4px 10px rgba(0,0,0,0.2); }
+        .typewriter-container { font-size: 1.2rem; margin-top: 10px; color: var(--text-accent); text-shadow: 0px 2px 5px rgba(0,0,0,0.2); font-weight: bold; min-height: 1.5rem; }
+        .typewriter-cursor { animation: blink 0.8s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .grid-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 900px; margin: -50px auto 50px auto; padding: 20px; position: relative; z-index: 2; perspective: 1000px; }
+        
+        .organic-float { animation: organic-float-anim 8s ease-in-out infinite alternate; }
+        .float-delay-1 { animation-delay: -2s; animation-duration: 7s; }
+        .float-delay-2 { animation-delay: -4s; animation-duration: 9s; }
+        .float-delay-3 { animation-delay: -1s; animation-duration: 8.5s; }
+        @keyframes organic-float-anim { 0% { transform: translate(0px, 0px) rotate(0deg); } 33% { transform: translate(4px, -12px) rotate(1.5deg); } 66% { transform: translate(-3px, -8px) rotate(-1.5deg); } 100% { transform: translate(-6px, -5px) rotate(0.5deg); } }
+
+        .card { background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-top: 2px solid rgba(255,255,255,1); border-radius: 25px; padding: 30px 20px; width: 170px; text-align: center; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: var(--text-dark); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; transform-style: preserve-3d; }
+        .card i { font-size: 3rem; display: block; margin-bottom: 15px; color: var(--icon-gradient-1); transform: translateZ(30px); }
+        .card span { display: block; transform: translateZ(20px); }
+
+        .status-widget { position: absolute; top: 20px; right: 30px; font-size: 1.2rem; text-shadow: 0px 2px 4px rgba(0,0,0,0.3); z-index: 10; display: flex; align-items: center; gap: 20px; color: var(--text-main); }
+        .status-item { display: flex; align-items: center; gap: 8px; }
+        .settings-btn { cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 50%; }
+        .settings-btn:hover { transform: rotate(90deg) scale(1.1); color: var(--text-dark); background: rgba(255,255,255,0.3); }
+
+        /* MUSIC WIDGET */
+        #music-widget { position: fixed; bottom: 30px; left: 50%; margin-left: -160px; width: 320px; background: rgba(255,255,255,0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); border-top: 2px solid white; border-radius: 20px; z-index: 9998; box-shadow: 0 8px 32px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1); height: 50px; }
+        .music-header { padding: 0 20px; height: 50px; cursor: pointer; background: rgba(255,255,255,0.3); display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--text-dark); border-bottom: 1px solid rgba(255,255,255,0.3); transition: 0.2s; }
+        .music-header:hover { background: rgba(255,255,255,0.5); }
+        .music-toggle-btn { transition: transform 0.3s; }
+        .music-content { padding: 15px; display: none; }
+        #music-widget.open { height: 235px; } 
+        #music-widget.open .music-content { display: block; }
+        #music-widget.open .music-toggle-btn { transform: rotate(180deg); }
+
+        /* MEDIA MODULE */
+        #anime-view { display: none; padding-top: 50px; box-sizing: border-box; }
+        .anime-sidebar { width: 250px; padding: 20px; margin-left: 20px; margin-top: -20px; background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; height: calc(100vh - 80px); box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        .back-btn { background: transparent; border: 2px solid var(--text-main); color: var(--text-main); padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 20px; width: 100%; transition: 0.2s; font-family: inherit; }
+        .back-btn:hover { background: var(--text-main); color: var(--text-dark); }
+        .category-btn { background: rgba(255,255,255,0.4); border: none; padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 10px; text-align: left; font-size: 1.1rem; color: var(--text-dark); font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; z-index: 10; position: relative;}
+        .category-btn:hover, .category-btn.active-tab { background: rgba(255,255,255,0.9); transform: translateX(5px); }
+        
+        .anime-content { flex: 1; padding: 0 40px; overflow-y: auto; height: calc(100vh - 100px); perspective: 1000px; }
+        .anime-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-bottom: 50px; perspective: 1000px; }
+        
+        /* ✨ GLOSSY AERO BUTTONS (Edit, Delete, +, -) ✨ */
+        .aero-glass-btn {
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 8px rgba(0,0,0,0.15);
+            border-radius: 8px; cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-family: inherit; display: flex; align-items: center; justify-content: center;
+        }
+        .aero-glass-btn:hover { transform: scale(1.1) translateY(-2px); box-shadow: inset 0 3px 6px rgba(255,255,255,1), 0 6px 12px rgba(0,0,0,0.2); }
+        
+        .aero-btn-del { background: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%); color: white; width: 28px; height: 28px; }
+        .aero-btn-edit { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; width: 28px; height: 28px; }
+        .aero-btn-progress { background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%); color: var(--text-dark); width: 28px; height: 28px; font-weight: bold; font-size: 1rem; }
+
+        /* THEME CARDS */
+        .anime-item { backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; transition: transform 0.1s ease-out; transform-style: preserve-3d; overflow: hidden; }
+        .anime-item > * { position: relative; z-index: 2; }
+        .theme-watermark { position: absolute !important; bottom: -20px; right: -20px; font-size: 9rem; opacity: 0.15; z-index: 0 !important; pointer-events: none; transform: translateZ(5px); color: inherit; }
+        
+        .theme-aero { background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4)); color: var(--text-dark); }
+        .theme-jjk { background: linear-gradient(135deg, rgba(88, 28, 135, 0.9), rgba(153, 27, 27, 0.9)); color: #ffffff; border-color: rgba(255,255,255,0.3); }
+        .theme-bluelock { background: linear-gradient(135deg, rgba(2, 6, 23, 0.9), rgba(8, 145, 178, 0.9)); color: #ffffff; border-color: #06b6d4; }
+        .theme-naruto { background: linear-gradient(135deg, rgba(234, 88, 12, 0.9), rgba(30, 30, 30, 0.9)); color: #ffffff; border-color: #f97316; }
+        .theme-aot { background: linear-gradient(135deg, rgba(20, 83, 45, 0.9), rgba(69, 26, 3, 0.9)); color: #ffffff; border-color: #4ade80; }
+        .theme-onepiece { background: linear-gradient(135deg, rgba(2, 132, 199, 0.9), rgba(185, 28, 28, 0.9)); color: #ffffff; border-color: #facc15; }
+        .theme-dragonball { background: linear-gradient(135deg, rgba(234, 88, 12, 0.9), rgba(250, 204, 21, 0.9)); color: #ffffff; border-color: #fb923c; }
+        .theme-demonslayer { background: linear-gradient(135deg, rgba(20, 83, 45, 0.9), rgba(0, 0, 0, 0.9)); color: #ffffff; border-color: #22c55e; }
+        .theme-evangelion { background: linear-gradient(135deg, rgba(88, 28, 135, 0.9), rgba(21, 128, 61, 0.9)); color: #ffffff; border-color: #a855f7; }
+        
+        .theme-image-focus { padding: 0; border: 2px solid rgba(255,255,255,0.8); background: #000; display: flex; flex-direction: column; justify-content: flex-end; }
+        .theme-image-focus .anime-img-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; border-radius: 12px; z-index: 1; box-shadow: none; transform: translateZ(5px); background: transparent; }
+        .theme-image-focus .anime-real-img { opacity: 0.9; }
+        .dynamic-blur-bg { position: absolute !important; top: -10%; left: -10%; width: 120%; height: 120%; object-fit: cover; filter: blur(25px) brightness(0.6); z-index: 0 !important; }
+        .theme-image-focus .anime-title, .theme-image-focus .status-dropdown, .theme-image-focus .progress-wrapper, .theme-image-focus .star-rating { position: relative; z-index: 3; margin: 0 10px 5px 10px; width: calc(100% - 20px); background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); padding: 5px; border-radius: 8px; box-sizing: border-box; transform: translateZ(25px); color: var(--text-dark); }
+        .theme-image-focus .anime-title { margin-top: auto; padding: 10px 5px; margin-bottom: 2px; }
+
+        /* Card Elements */
+        .anime-img-container { transform: translateZ(30px); width: 100%; height: 160px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.3); color: inherit; transition: 0.2s; }
+        .anime-real-img { width: 100%; height: 100%; object-fit: cover; }
+        .anime-title { transform: translateZ(20px); font-size: 1.1rem; margin-bottom: 2px; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
+        
+        /* ✨ STAR RATING DISPLAY ✨ */
+        .star-rating { transform: translateZ(20px); font-size: 0.9rem; color: #f1c40f; margin-bottom: 8px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        .control-btns { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; transform: translateZ(25px); z-index: 10; }
+        .status-dropdown { transform: translateZ(15px); width: 100%; padding: 5px; margin-top: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.6); font-family: inherit; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .progress-wrapper { transform: translateZ(20px); width: 100%; margin-top: 5px; }
+        .progress-bar-bg { width: 100%; height: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #4facfe, #00f2fe); border-radius: 10px; transition: width 0.3s ease; }
+        .progress-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 5px; font-weight: bold; }
+
+        @keyframes card-pop-plus { 0% { transform: perspective(1000px) translateY(0) scale(1) rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 20% { transform: perspective(1000px) translateY(-10px) scale(1.05) rotateX(5deg) rotateY(-15deg) rotateZ(-2deg); } 50% { transform: perspective(1000px) translateY(-25px) scale(1.1) rotateX(10deg) rotateY(180deg) rotateZ(3deg); } 80% { transform: perspective(1000px) translateY(-5px) scale(1.02) rotateX(-3deg) rotateY(365deg) rotateZ(-1deg); } 90% { transform: perspective(1000px) translateY(0) scale(1) rotateX(1deg) rotateY(358deg) rotateZ(0.5deg); } 100% { transform: perspective(1000px) translateY(0) scale(1) rotateX(0deg) rotateY(360deg) rotateZ(0deg); } }
+        @keyframes card-shrink-minus { 0% { transform: perspective(1000px) scale(1) translateY(0) rotateZ(0deg); } 20% { transform: perspective(1000px) scale(0.9) translateY(10px) rotateZ(-3deg); filter: grayscale(50%) brightness(0.8); } 40% { transform: perspective(1000px) scale(0.9) translateY(10px) rotateZ(3deg); filter: grayscale(50%) brightness(0.8); } 60% { transform: perspective(1000px) scale(0.9) translateY(10px) rotateZ(-3deg); filter: grayscale(50%) brightness(0.8); } 80% { transform: perspective(1000px) scale(0.9) translateY(10px) rotateZ(3deg); filter: grayscale(50%) brightness(0.8); } 100% { transform: perspective(1000px) scale(1) translateY(0) rotateZ(0deg); filter: grayscale(0%) brightness(1); } }
+        .anim-card-plus { animation: card-pop-plus 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; z-index: 100; pointer-events: none; }
+        .anim-card-minus { animation: card-shrink-minus 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 100; pointer-events: none; }
+
+        .add-new-btn { background: rgba(255,255,255,0.2) !important; border: 2px dashed var(--text-main) !important; color: var(--text-main) !important; justify-content: center; height: 350px; cursor: pointer; }
+        .add-new-btn:hover { background: rgba(255,255,255,0.4) !important; }
+        .add-new-btn .theme-watermark { display: none; }
+
+        /* MODALS & SETTINGS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: rgba(255, 255, 255, 0.95); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; width: 350px; color: var(--text-dark); text-align: center; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content h2 { margin-top: 0; color: var(--icon-gradient-1); }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; box-sizing: border-box; background: rgba(255,255,255,0.8); font-weight: bold; color: var(--text-dark); }
+        .row-inputs { display: flex; gap: 10px; }
+        .modal-btn { padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; width: 48%; transition: 0.2s; font-family: inherit; }
+        .btn-confirm { background: linear-gradient(135deg, var(--icon-gradient-1), var(--icon-gradient-2)); color: white; }
+        .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-cancel { background: #e2e8f0; color: var(--text-dark); }
+        .btn-cancel:hover { background: #cbd5e1; }
+        
+        .settings-group { text-align: left; margin-bottom: 15px; font-weight: bold; }
+        .settings-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Intensity Slider CSS */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--icon-gradient-1); cursor: pointer; margin-top: -6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #cbd5e1; border-radius: 5px; }
+
+        .potato-toggle-container { margin: 20px 0 0 0; background: #f1f5f9; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; border: 1px solid #e2e8f0; }
+
+        /* POTATO MODE */
+        body.potato-mode .wave-container, body.potato-mode #weather-container, body.potato-mode .floating-item { display: none !important; }
+        body.potato-mode * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: none !important; transform-style: flat !important; }
+        body.potato-mode .card, body.potato-mode .anime-sidebar, body.potato-mode .anime-item, body.potato-mode #music-widget { background: rgba(255,255,255,0.95) !important; color: #1e3a8a !important; }
+        body.potato-mode .anime-item > * { transform: none !important; }
+        body.potato-mode .theme-watermark, body.potato-mode .dynamic-blur-bg { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="weather-container"></div>
+
+    <div id="smooth-wipe"></div>
+    <div class="wave-container"><div class="wave"></div><div class="wave"></div></div>
+    
+    <img src="https://picsum.photos/100/100?random=1" class="floating-item float-1" alt="Bg 1">
+    <img src="https://picsum.photos/150/150?random=2" class="floating-item float-2" alt="Bg 2">
+    <img src="https://picsum.photos/80/80?random=3" class="floating-item float-3" alt="Bg 3">
+
+    <div class="status-widget">
+        <div class="status-item"><i class="fa-solid fa-battery-half" id="battery-icon"></i><span id="battery-level">--%</span></div>
+        <div class="status-item"><i class="fa-regular fa-clock"></i><span id="digital-clock">00:00</span></div>
+        <div class="status-item settings-btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i></div>
+    </div>
+
+    <div id="music-widget" class="organic-float float-delay-1">
+        <div class="music-header" id="music-header" onclick="toggleMusic()">
+            <span data-i18n="music-title"><i class="fa-solid fa-music"></i> Music</span>
+            <div class="music-toggle-btn"><i class="fa-solid fa-chevron-up"></i></div>
+        </div>
+        <div class="music-content">
+            <iframe allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:660px;overflow:hidden;background:transparent;border-radius:10px;" src="https://embed.music.apple.com/us/playlist/lofi-chill/pl.u-yZyVEeXtd7N7m4"></iframe>
+        </div>
+    </div>
+
+    <div class="view" id="dashboard-view">
+        <div class="banner">
+            <h1 data-i18n="welcome">Welcome, Suleyman</h1>
+            <div class="typewriter-container">
+                <span id="typewriter-text"></span><span class="typewriter-cursor">|</span>
+            </div>
+        </div>
+        <div class="grid-container">
+            <div class="organic-float float-delay-2">
+                <div class="card main-card" onclick="openAnimeModule()">
+                    <i class="fa-solid fa-layer-group"></i><span data-i18n="watchlist-btn">Library</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="view" id="anime-view">
+        <div class="anime-sidebar organic-float float-delay-3">
+            <button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="hub-btn">Hub</span></button>
+            <button class="category-btn active-tab" onclick="filterCategory('watching', this)" data-i18n="cat-watching">Watching</button>
+            <button class="category-btn" onclick="filterCategory('reading', this)" data-i18n="cat-reading">Reading</button>
+            <button class="category-btn" onclick="filterCategory('plan', this)" data-i18n="cat-plan">Plan to Watch</button>
+            <button class="category-btn" onclick="filterCategory('completed', this)" data-i18n="cat-completed">Completed</button>
+        </div>
+        <div class="anime-content">
+            <h2 id="category-title" data-i18n="cat-watching">Watching</h2>
+            <div class="anime-grid" id="main-grid"></div>
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" data-i18n="add-entry-title">Add New Entry</h2>
+            <input type="text" id="entry-title" placeholder="Title (e.g., One Piece)">
+            <input type="text" id="entry-img" placeholder="Image URL (Optional)">
+            
+            <div class="row-inputs">
+                <select id="entry-type">
+                    <option value="Anime" data-i18n="type-anime">Anime</option>
+                    <option value="Manga" data-i18n="type-manga">Manga</option>
+                    <option value="Film" data-i18n="type-film">Film</option>
+                    <option value="Series" data-i18n="type-series">Series</option>
+                    <option value="Book" data-i18n="type-book">Book</option>
+                </select>
+                <select id="entry-status">
+                    <option value="watching" data-i18n="stat-watching">Watching</option>
+                    <option value="reading" data-i18n="stat-reading">Reading</option>
+                    <option value="plan" data-i18n="stat-plan">Plan</option>
+                    <option value="completed" data-i18n="stat-completed">Completed</option>
+                </select>
+            </div>
+            
+            <select id="entry-theme">
+                <option value="theme-aero">Theme: Default Aero</option>
+                <option value="theme-image-focus">Theme: Image Focus (Full Cover)</option>
+                <option value="theme-jjk">Theme: Jujutsu Kaisen</option>
+                <option value="theme-bluelock">Theme: Blue Lock</option>
+                <option value="theme-naruto">Theme: Naruto</option>
+                <option value="theme-aot">Theme: Attack on Titan</option>
+                <option value="theme-onepiece">Theme: One Piece</option>
+                <option value="theme-dragonball">Theme: Dragon Ball</option>
+                <option value="theme-demonslayer">Theme: Demon Slayer</option>
+                <option value="theme-evangelion">Theme: Evangelion</option>
+            </select>
+            
+            <div class="row-inputs">
+                <input type="number" id="entry-progress" placeholder="Current Ep/Ch" value="0" min="0">
+                <input type="number" id="entry-total" placeholder="Total Ep/Ch" value="12" min="1">
+            </div>
+
+            <input type="number" id="entry-rating" placeholder="Rating (0-5 Stars)" value="0" min="0" max="5">
+
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <button class="modal-btn btn-cancel" onclick="closeModal()" data-i18n="btn-cancel">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="submitEntry()" id="submit-btn" data-i18n="btn-add">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2><i class="fa-solid fa-sliders"></i> <span data-i18n="settings-title">System Settings</span></h2>
+            
+            <div class="settings-group">
+                <label><i class="fa-solid fa-globe"></i> <span data-i18n="set-lang">Language</span></label>
+                <select id="language-select" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="de">Deutsch (German)</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label><i class="fa-solid fa-palette"></i> <span data-i18n="set-theme">Global Theme</span></label>
+                <select id="global-theme-select" onchange="changeGlobalTheme(this.value)">
+                    <option value="default">Aero Blue</option>
+                    <option value="sakura">Sakura Blossom</option>
+                    <option value="midnight">Midnight Mode</option>
+                    <option value="forest">Forest Breeze</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label><i class="fa-solid fa-cloud-sun"></i> <span data-i18n="set-weather">Weather Effect</span></label>
+                <select id="weather-select" onchange="changeWeather(this.value)">
+                    <option value="none">None (Clear)</option>
+                    <option value="rain">Light Rain</option>
+                    <option value="clouds">Passing Clouds</option>
+                    <option value="sun">Warm Sunshine</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label><i class="fa-solid fa-droplet"></i> <span data-i18n="set-intensity">Weather Intensity</span></label>
+                <input type="range" id="weather-intensity" min="10" max="100" value="50" onchange="changeWeatherIntensity(this.value)">
+            </div>
+
+            <div class="potato-toggle-container">
+                <span><i class="fa-solid fa-bolt"></i> <span data-i18n="set-potato">Potato Mode (Fix Lag)</span></span>
+                <input type="checkbox" id="potato-toggle" onchange="togglePotatoMode(this.checked)" style="width: 20px; height: 20px;">
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 25px;">
+                <button class="modal-btn btn-confirm" onclick="closeSettings()" style="width: 100%;" data-i18n="btn-close">Apply & Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ✨ TRANSLATION DICTIONARY ✨ ---
+        const translations = {
+            en: {
+                "welcome": "Welcome, Suleyman",
+                "watchlist-btn": "Library",
+                "hub-btn": "Hub",
+                "music-title": " Music",
+                "cat-watching": "Watching",
+                "cat-reading": "Reading",
+                "cat-plan": "Plan to Watch",
+                "cat-completed": "Completed",
+                "add-entry-title": "Add New Entry",
+                "type-anime": "Anime", "type-manga": "Manga", "type-film": "Film", "type-series": "Series", "type-book": "Book",
+                "stat-watching": "Watching", "stat-reading": "Reading", "stat-plan": "Plan", "stat-completed": "Completed",
+                "btn-cancel": "Cancel", "btn-add": "Add", "btn-save": "Save Changes",
+                "settings-title": "System Settings",
+                "set-lang": "Language", "set-theme": "Global Theme", "set-weather": "Weather Effect", "set-intensity": "Weather Intensity", "set-potato": "Potato Mode", "btn-close": "Apply & Close"
+            },
+            de: {
+                "welcome": "Willkommen, Suleyman",
+                "watchlist-btn": "Bibliothek",
+                "hub-btn": "Zentrale",
+                "music-title": " Musik",
+                "cat-watching": "Zuschauen",
+                "cat-reading": "Lesen",
+                "cat-plan": "Geplant",
+                "cat-completed": "Abgeschlossen",
+                "add-entry-title": "Neu Hinzufügen",
+                "type-anime": "Anime", "type-manga": "Manga", "type-film": "Film", "type-series": "Serie", "type-book": "Buch",
+                "stat-watching": "Zuschauen", "stat-reading": "Lesen", "stat-plan": "Geplant", "stat-completed": "Abgeschlossen",
+                "btn-cancel": "Abbrechen", "btn-add": "Hinzufügen", "btn-save": "Speichern",
+                "settings-title": "Systemeinstellungen",
+                "set-lang": "Sprache", "set-theme": "Design", "set-weather": "Wetter-Effekt", "set-intensity": "Wetter-Intensität", "set-potato": "Kartoffel-Modus (Anti-Lag)", "btn-close": "Schließen"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('suleymanLang', lang);
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    // Keep the icon if it has one (like the Hub button)
+                    const icon = el.querySelector('i');
+                    el.innerText = translations[lang][key];
+                    if (icon) el.prepend(icon);
+                }
+            });
+            renderLibrary(); // Re-render to translate card dropdowns
+        }
+
+        // --- TIME & BATTERY ---
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours().toString().padStart(2, '0');
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            const clockEl = document.getElementById('digital-clock');
+            if(clockEl) clockEl.innerText = `${hours}:${minutes}`;
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        function initBattery() {
+            const levelEl = document.getElementById('battery-level');
+            const iconEl = document.getElementById('battery-icon');
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(battery => {
+                    function updateAll() {
+                        let level = Math.round(battery.level * 100);
+                        if(levelEl) levelEl.innerText = level + '%';
+                        if(iconEl) {
+                            if (battery.charging) iconEl.className = 'fa-solid fa-battery-bolt';
+                            else if (level > 75) iconEl.className = 'fa-solid fa-battery-full';
+                            else if (level > 50) iconEl.className = 'fa-solid fa-battery-three-quarters';
+                            else if (level > 25) iconEl.className = 'fa-solid fa-battery-half';
+                            else iconEl.className = 'fa-solid fa-battery-quarter';
+                        }
+                    }
+                    updateAll(); battery.addEventListener('levelchange', updateAll); battery.addEventListener('chargingchange', updateAll);
+                }).catch(() => { if(levelEl) levelEl.innerText = "100%"; });
+            } else { if(levelEl) levelEl.innerText = "100%"; }
+        }
+        initBattery();
+
+        // --- WEATHER SYSTEM & INTENSITY SLIDER ---
+        function changeWeather(weatherType) {
+            localStorage.setItem('suleymanWeather', weatherType);
+            const container = document.getElementById('weather-container');
+            container.innerHTML = ''; 
+            if(document.body.classList.contains('potato-mode')) return;
+
+            let intensityStr = localStorage.getItem('suleymanWeatherIntensity') || '50';
+            let intensityNum = parseInt(intensityStr) / 100;
+            container.style.opacity = intensityNum; // Applies slider intensity!
+
+            if (weatherType === 'rain') {
+                for(let i=0; i<30; i++) {
+                    let drop = document.createElement('div'); drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + 'vw';
+                    drop.style.animationDelay = Math.random() * 2 + 's'; drop.style.animationDuration = 0.5 + Math.random() * 0.5 + 's';
+                    drop.style.height = 40 + Math.random() * 60 + 'px'; container.appendChild(drop);
+                }
+            } else if (weatherType === 'clouds') {
+                for(let i=0; i<6; i++) {
+                    let cloud = document.createElement('div'); cloud.className = 'cloud-puff';
+                    cloud.style.top = Math.random() * 60 + 'vh'; cloud.style.width = 150 + Math.random() * 200 + 'px'; cloud.style.height = 50 + Math.random() * 80 + 'px';
+                    cloud.style.animationDelay = Math.random() * -20 + 's'; cloud.style.animationDuration = 20 + Math.random() * 20 + 's'; container.appendChild(cloud);
+                }
+            } else if (weatherType === 'sun') {
+                let sun = document.createElement('div'); sun.className = 'sun-flare'; container.appendChild(sun);
+            }
+        }
+
+        function changeWeatherIntensity(val) {
+            localStorage.setItem('suleymanWeatherIntensity', val);
+            document.getElementById('weather-container').style.opacity = val / 100;
+        }
+
+        // --- TYPEWRITER ---
+        const typeQuotes = ["Strength in silence", "To endure is to conquer", "Rise above", "Embrace the struggle", "Conquer from within"];
+        let quoteIndex = 0; let charIndex = 0; let isDeleting = false;
+        function typeEffect() {
+            const typewriterElem = document.getElementById('typewriter-text');
+            if(!typewriterElem) return;
+            const currentQuote = typeQuotes[quoteIndex];
+            if (isDeleting) { typewriterElem.innerText = currentQuote.substring(0, charIndex - 1); charIndex--; } 
+            else { typewriterElem.innerText = currentQuote.substring(0, charIndex + 1); charIndex++; }
+            
+            let typingSpeed = isDeleting ? 40 : 100;
+            if (!isDeleting && charIndex === currentQuote.length) { typingSpeed = 2000; isDeleting = true; } 
+            else if (isDeleting && charIndex === 0) { isDeleting = false; quoteIndex = (quoteIndex + 1) % typeQuotes.length; typingSpeed = 500; }
+            setTimeout(typeEffect, typingSpeed);
+        }
+
+        // --- GLOBAL THEME & 3D ---
+        function changeGlobalTheme(themeName) { document.body.setAttribute('data-theme', themeName); localStorage.setItem('suleymanGlobalTheme', themeName); }
+
+        function apply3DTilt(element) {
+            if(document.body.classList.contains('potato-mode')) return;
+            element.addEventListener('mousemove', (e) => {
+                if(document.body.classList.contains('potato-mode')) return;
+                const rect = element.getBoundingClientRect();
+                const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+                const centerX = rect.width / 2; const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -12; const rotateY = ((x - centerX) / centerX) * 12;
+                element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+            });
+            element.addEventListener('mouseleave', () => { element.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`; });
+        }
+        document.querySelectorAll('.main-card').forEach(card => apply3DTilt(card));
+
+        function toggleMusic() { document.getElementById('music-widget').classList.toggle('open'); }
+
+        function triggerWipeTransition(onMidpoint) {
+            if(document.body.classList.contains('potato-mode')) { onMidpoint(); return; }
+            const wipe = document.getElementById('smooth-wipe');
+            wipe.style.transition = 'transform 0.6s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.3s ease-in'; wipe.style.opacity = '1'; wipe.style.transform = 'translateX(-100vw)'; 
+            setTimeout(() => {
+                onMidpoint(); 
+                wipe.style.transition = 'transform 0.6s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.3s ease-out'; wipe.style.transform = 'translateX(-220vw)'; wipe.style.opacity = '0'; 
+                setTimeout(() => { wipe.style.transition = 'none'; wipe.style.transform = 'translateX(0)'; }, 600);
+            }, 500); 
+        }
+
+        function openAnimeModule() { triggerWipeTransition(() => { document.getElementById('dashboard-view').style.display = 'none'; document.getElementById('anime-view').style.display = 'flex'; renderLibrary(); }); }
+        function goBackToDashboard() { triggerWipeTransition(() => { document.getElementById('anime-view').style.display = 'none'; document.getElementById('dashboard-view').style.display = 'block'; }); }
+
+        // --- DATABASE LOGIC ---
+        let animeLibrary = [];
+        let currentFilter = 'watching';
+        let editingId = null; 
+
+        try { const savedData = localStorage.getItem('suleymanAnimeData'); if (savedData) animeLibrary = JSON.parse(savedData); } 
+        catch(e) { console.error("Memory error:", e); }
+
+        function renderLibrary() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = ''; 
+
+            const addBtn = document.createElement('div');
+            addBtn.className = 'anime-item add-new-btn';
+            addBtn.onclick = () => openModal(null);
+            addBtn.innerHTML = `<div class="anime-img-container" style="background:transparent; border:none; box-shadow:none;"><i class="fa-solid fa-plus"></i></div><span data-i18n="add-new">Add New...</span>`;
+            grid.appendChild(addBtn);
+            apply3DTilt(addBtn); 
+
+            animeLibrary.forEach(item => {
+                if (item.status !== currentFilter) return;
+
+                const card = document.createElement('div');
+                let themeClass = item.themeClass || 'theme-aero';
+                card.className = `anime-item ${themeClass}`;
+                card.id = `card-${item.id}`;
+
+                // Type Icon Logic
+                let typeIcon = 'fa-tv';
+                if(item.type === 'Manga') typeIcon = 'fa-book-open';
+                if(item.type === 'Film') typeIcon = 'fa-film';
+                if(item.type === 'Series') typeIcon = 'fa-video';
+                if(item.type === 'Book') typeIcon = 'fa-book';
+
+                // Watermark Logic
+                let watermarkIcon = typeIcon; 
+                if (themeClass === 'theme-jjk') watermarkIcon = 'fa-ghost';
+                if (themeClass === 'theme-bluelock') watermarkIcon = 'fa-futbol';
+                if (themeClass === 'theme-naruto') watermarkIcon = 'fa-leaf';
+                if (themeClass === 'theme-aot') watermarkIcon = 'fa-shield-halved';
+                if (themeClass === 'theme-onepiece') watermarkIcon = 'fa-skull-crossbones';
+                if (themeClass === 'theme-dragonball') watermarkIcon = 'fa-dragon';
+                if (themeClass === 'theme-demonslayer') watermarkIcon = 'fa-fire-flame-curved';
+                if (themeClass === 'theme-evangelion') watermarkIcon = 'fa-robot';
+                if (themeClass === 'theme-image-focus') watermarkIcon = 'fa-image';
+
+                let percent = (item.progress / item.total) * 100;
+                if(percent > 100) percent = 100;
+
+                let imgHTML = item.imgUrl ? `<img src="${item.imgUrl}" class="anime-real-img">` : `<i class="fa-solid ${typeIcon}"></i>`;
+                let dynamicBlur = (themeClass === 'theme-image-focus' && item.imgUrl) ? `<img src="${item.imgUrl}" class="dynamic-blur-bg">` : '';
+
+                // ✨ STAR RATING DISPLAY ✨
+                let ratingHTML = '<div class="star-rating">';
+                let rating = item.rating || 0;
+                for(let i=1; i<=5; i++) {
+                    if(i <= rating) ratingHTML += '<i class="fa-solid fa-star"></i>';
+                    else ratingHTML += '<i class="fa-regular fa-star"></i>';
+                }
+                ratingHTML += '</div>';
+
+                // Translation for dropdowns
+                let tWatch = translations[currentLang]["stat-watching"];
+                let tRead = translations[currentLang]["stat-reading"];
+                let tPlan = translations[currentLang]["stat-plan"];
+                let tComp = translations[currentLang]["stat-completed"];
+
+                card.innerHTML = `
+                    ${dynamicBlur}
+                    <i class="fa-solid ${watermarkIcon} theme-watermark"></i>
+                    
+                    <div class="control-btns">
+                        <button class="aero-glass-btn aero-btn-edit" onclick="openModal(${item.id})"><i class="fa-solid fa-pencil"></i></button>
+                        <button class="aero-glass-btn aero-btn-del" onclick="deleteEntry(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+
+                    <div class="anime-img-container">${imgHTML}</div>
+                    <div class="anime-title" title="${item.title}">${item.title}</div>
+                    ${ratingHTML}
+                    
+                    <select class="status-dropdown" onchange="changeStatus(${item.id}, this.value)">
+                        <option value="watching" ${item.status === 'watching' ? 'selected' : ''}>${tWatch}</option>
+                        <option value="reading" ${item.status === 'reading' ? 'selected' : ''}>${tRead}</option>
+                        <option value="plan" ${item.status === 'plan' ? 'selected' : ''}>${tPlan}</option>
+                        <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>${tComp}</option>
+                    </select>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+                        </div>
+                        <div class="progress-info">
+                            <button class="aero-glass-btn aero-btn-progress" onclick="updateProgress(${item.id}, -1)">-</button>
+                            <span>${item.progress} / ${item.total}</span>
+                            <button class="aero-glass-btn aero-btn-progress" onclick="updateProgress(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+                apply3DTilt(card);
+            });
+        }
+
+        // PROGRESS WIGGLE UPDATE
+        function updateProgress(id, amount) {
+            const cardElement = document.getElementById(`card-${id}`);
+            let animDuration = 600; 
+
+            if (cardElement && !document.body.classList.contains('potato-mode')) {
+                if (amount > 0) {
+                    cardElement.classList.add('anim-card-plus');
+                    animDuration = 1400; 
+                } else {
+                    cardElement.classList.add('anim-card-minus');
+                }
+            }
+
+            const index = animeLibrary.findIndex(i => i.id === id);
+            if(index > -1) {
+                let newProg = animeLibrary[index].progress + amount;
+                if(newProg < 0) newProg = 0; 
+                if(newProg > animeLibrary[index].total) newProg = animeLibrary[index].total; 
+                animeLibrary[index].progress = newProg;
+                
+                saveData(); 
+                setTimeout(() => { renderLibrary(); }, animDuration);
+            }
+        }
+
+        function submitEntry() {
+            const title = document.getElementById('entry-title').value;
+            const img = document.getElementById('entry-img').value;
+            const type = document.getElementById('entry-type').value;
+            const status = document.getElementById('entry-status').value;
+            const theme = document.getElementById('entry-theme').value; 
+            const prog = parseInt(document.getElementById('entry-progress').value) || 0;
+            const tot = parseInt(document.getElementById('entry-total').value) || 1;
+            const rating = parseInt(document.getElementById('entry-rating').value) || 0;
+
+            if (!title) { alert("Title is required!"); return; }
+
+            if (editingId) {
+                const index = animeLibrary.findIndex(i => i.id === editingId);
+                if (index > -1) animeLibrary[index] = { id: editingId, title, imgUrl: img, type, status, themeClass: theme, progress: prog, total: tot, rating: rating };
+            } else {
+                const newItem = { id: Date.now(), title, imgUrl: img, type, status, themeClass: theme, progress: prog, total: tot, rating: rating };
+                animeLibrary.push(newItem);
+            }
+
+            saveData(); closeModal(); renderLibrary();
+        }
+
+        function deleteEntry(id) { if(confirm("Delete this entry?")) { animeLibrary = animeLibrary.filter(i => i.id !== id); saveData(); renderLibrary(); } }
+        function changeStatus(id, newStatus) { const index = animeLibrary.findIndex(i => i.id === id); if(index > -1) { animeLibrary[index].status = newStatus; saveData(); renderLibrary(); } }
+        function saveData() { localStorage.setItem('suleymanAnimeData', JSON.stringify(animeLibrary)); }
+        function filterCategory(status, btn) { currentFilter = status; document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active-tab')); btn.classList.add('active-tab'); document.getElementById('category-title').innerText = btn.innerText; renderLibrary(); }
+
+        function openModal(id = null) { 
+            editingId = id;
+            if (id) {
+                const item = animeLibrary.find(i => i.id === id);
+                document.getElementById('modal-title').innerText = translations[currentLang]["btn-save"] || "Edit Entry";
+                document.getElementById('submit-btn').innerText = translations[currentLang]["btn-save"] || "Save Changes";
+                document.getElementById('entry-title').value = item.title;
+                document.getElementById('entry-img').value = item.imgUrl || "";
+                document.getElementById('entry-type').value = item.type;
+                document.getElementById('entry-status').value = item.status;
+                document.getElementById('entry-theme').value = item.themeClass || "theme-aero";
+                document.getElementById('entry-progress').value = item.progress;
+                document.getElementById('entry-total').value = item.total;
+                document.getElementById('entry-rating').value = item.rating || 0;
+            } else {
+                document.getElementById('modal-title').innerText = translations[currentLang]["add-entry-title"];
+                document.getElementById('submit-btn').innerText = translations[currentLang]["btn-add"];
+                document.getElementById('entry-title').value = "";
+                document.getElementById('entry-img').value = "";
+                document.getElementById('entry-progress').value = "0";
+                document.getElementById('entry-rating').value = "0";
+            }
+            const modal = document.getElementById('add-modal');
+            modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+        }
+        
+        function closeModal() { 
+            const modal = document.getElementById('add-modal');
+            modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; editingId = null; }, 300);
+        }
+        
+        function openSettings() { 
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
+        }
+        function closeSettings() { 
+            const modal = document.getElementById('settings-modal');
+            modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        function togglePotatoMode(isPotato) {
+            if(isPotato) document.body.classList.add('potato-mode');
+            else document.body.classList.remove('potato-mode');
+            localStorage.setItem('suleymanPotatoMode', isPotato);
+            changeWeather(document.getElementById('weather-select').value); 
+        }
+
+        window.onload = () => {
+            const isPotato = localStorage.getItem('suleymanPotatoMode') === 'true';
+            document.getElementById('potato-toggle').checked = isPotato;
+            togglePotatoMode(isPotato);
+            
+            const savedLang = localStorage.getItem('suleymanLang') || 'en';
+            document.getElementById('language-select').value = savedLang;
+            changeLanguage(savedLang);
+
+            const savedGlobalTheme = localStorage.getItem('suleymanGlobalTheme') || 'default';
+            document.body.setAttribute('data-theme', savedGlobalTheme);
+            const themeSelect = document.getElementById('global-theme-select');
+            if(themeSelect) themeSelect.value = savedGlobalTheme;
+
+            const intensity = localStorage.getItem('suleymanWeatherIntensity') || '50';
+            const intensitySlider = document.getElementById('weather-intensity');
+            if(intensitySlider) intensitySlider.value = intensity;
+
+            const savedWeather = localStorage.getItem('suleymanWeather') || 'none';
+            const weatherSelect = document.getElementById('weather-select');
+            if(weatherSelect) weatherSelect.value = savedWeather;
+            changeWeather(savedWeather);
+
+            renderLibrary();
+            typeEffect(); 
+        };
+    </script>
+</body>
+</html>
