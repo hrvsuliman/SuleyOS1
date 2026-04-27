@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/modules.css">
+</head>
+<body>
+    <div id="weather-container"></div>
+    <div class="wave-container"><div class="wave"></div><div class="wave"></div></div>
+
+    <div id="school-main-view">
+        <div class="school-banner banner">
+            <button class="aero-glass-btn back-btn-top" onclick="window.location.href='index.html'">
+                <i class="fa-solid fa-arrow-left"></i> Hub
+            </button>
+            <h1><i class="fa-solid fa-graduation-cap"></i> School OS</h1>
+        </div>
+
+        <div class="school-layout">
+            <div class="school-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-calculator"></i> Subjects & Grades</h2>
+                    <button class="aero-glass-btn" onclick="openSubjectModal()"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="subject-grid" id="subject-grid"></div>
+            </div>
+
+            <div class="school-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-calendar-days"></i> Tasks & Tests</h2>
+                    <button class="aero-glass-btn" onclick="openTaskModal()"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="task-list" id="task-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="subject-detail-view" style="display: none;">
+        <div class="school-banner banner">
+            <button class="aero-glass-btn back-btn-top" onclick="closeSubjectDetails()">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            <h1 id="detail-title">Subject</h1>
+            <div class="grade-badge" id="detail-grade">1.0</div>
+        </div>
+
+        <div class="school-layout">
+            <div class="school-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-book"></i> Study Notes</h2>
+                </div>
+                <textarea id="new-note-text" placeholder="Write a new study note..." class="glass-input"></textarea>
+                <button class="aero-glass-btn add-btn-full" onclick="addNote()">Save Note</button>
+                <div id="notes-list" class="notes-container"></div>
+            </div>
+
+            <div class="school-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-image"></i> Board Images</h2>
+                </div>
+                <input type="text" id="new-image-url" placeholder="Paste Image URL..." class="glass-input">
+                <button class="aero-glass-btn add-btn-full" onclick="addImage()">Add Image</button>
+                <div id="images-grid" class="images-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="subject-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Add Subject</h2>
+            <input type="text" id="subj-name" placeholder="Subject (e.g., Math)" class="glass-input">
+            
+            <div class="settings-group">
+                <label>Written (Schriftlich) Grade (1-6)</label>
+                <input type="number" id="subj-written" step="0.1" min="1" max="6" value="1" class="glass-input">
+            </div>
+            <div class="settings-group">
+                <label>Oral (Mündlich) Grade (1-6)</label>
+                <input type="number" id="subj-oral" step="0.1" min="1" max="6" value="1" class="glass-input">
+            </div>
+            
+            <div class="settings-group">
+                <label>Weighting Multiplier</label>
+                <select id="subj-weight" class="glass-input">
+                    <option value="50">50% Written / 50% Oral</option>
+                    <option value="60">60% Written / 40% Oral</option>
+                    <option value="40">40% Written / 60% Oral</option>
+                    <option value="100">100% Written (No Oral)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="modal-btn btn-cancel" onclick="closeSchoolModals()">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="saveSubject()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="task-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Add Task / Test</h2>
+            <select id="task-type" class="glass-input">
+                <option value="Test">Class Test (Klausur)</option>
+                <option value="Homework">Homework (Hausaufgabe)</option>
+            </select>
+            <input type="text" id="task-subject" placeholder="Subject (e.g., English)" class="glass-input">
+            <input type="text" id="task-topic" placeholder="Topic (e.g., Grammar)" class="glass-input">
+            <input type="date" id="task-date" class="glass-input">
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="modal-btn btn-cancel" onclick="closeSchoolModals()">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="saveTask()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/core.js"></script>
+    <script src="js/school.js"></script>
+</body>
+</html>

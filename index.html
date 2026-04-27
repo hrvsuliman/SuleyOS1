@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suleyman's Life OS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/library.css">
+</head>
+<body>
+
+    <div id="weather-container"></div>
+    <div id="vignette-overlay"></div>
+    <div class="wave-container"><div class="wave"></div><div class="wave"></div></div>
+
+    <img src="https://picsum.photos/100/100?random=1" class="floating-item float-1" alt="Bg 1">
+    <img src="https://picsum.photos/150/150?random=2" class="floating-item float-2" alt="Bg 2">
+    <img src="https://picsum.photos/80/80?random=3" class="floating-item float-3" alt="Bg 3">
+
+    <div class="status-widget">
+        <div class="status-item"><i class="fa-solid fa-battery-half" id="battery-icon"></i><span id="battery-level">--%</span></div>
+        <div class="status-item"><i class="fa-regular fa-clock"></i><span id="digital-clock">00:00</span></div>
+        <div class="status-item settings-btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i></div>
+    </div>
+
+    <div id="aero-music-player" class="organic-float float-delay-1">
+        <button class="player-btn" id="play-pause-btn" onclick="toggleBGM()">
+            <i class="fa-solid fa-play" id="play-icon" style="margin-left: 3px;"></i>
+        </button>
+        <div class="track-info">
+            <span class="track-title" id="track-name">System BGM Offline (Click Play)</span>
+            <div class="player-bar-bg">
+                <div class="player-bar-fill" id="music-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="view" id="dashboard-view">
+        <div class="banner">
+            <h1 data-i18n="welcome">Welcome, Suleyman</h1>
+            <div class="typewriter-container">
+                <span id="typewriter-text"></span><span class="typewriter-cursor">|</span>
+            </div>
+        </div>
+        <div class="grid-container">
+            <div class="organic-float float-delay-2">
+                <div class="card main-card" onclick="openAnimeModule()">
+                    <i class="fa-solid fa-layer-group"></i><span data-i18n="watchlist-btn">Library</span>
+                </div>
+            </div>
+            
+            <div class="organic-float float-delay-3">
+                <div class="card main-card" onclick="navigateWithSwipe('school.html')">
+                    <i class="fa-solid fa-graduation-cap"></i><span>School OS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="view" id="anime-view" style="display: none;">
+        <div class="anime-sidebar organic-float float-delay-3">
+            <button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="hub-btn">Hub</span></button>
+            
+            <button class="category-btn active-tab" onclick="filterCategory('watching', this)" data-i18n="cat-watching">Watching</button>
+            <button class="category-btn" onclick="filterCategory('reading', this)" data-i18n="cat-reading">Reading</button>
+            <button class="category-btn" onclick="filterCategory('plan', this)" data-i18n="cat-plan">Plan to Watch</button>
+            <button class="category-btn" onclick="filterCategory('completed', this)" data-i18n="cat-completed">Completed</button>
+        </div>
+        <div class="anime-content">
+            <h2 id="category-title" data-i18n="cat-watching">Watching</h2>
+            <div class="anime-grid" id="main-grid"></div>
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" data-i18n="add-entry-title">Add New Entry</h2>
+            <input type="text" id="entry-title" placeholder="Title (e.g., One Piece)">
+            <input type="text" id="entry-img" placeholder="Image URL (Optional)">
+            <input type="url" id="entry-link" placeholder="Watch/Read Website URL (Optional)">
+            
+            <div class="row-inputs">
+                <select id="entry-type" class="aero-select">
+                    <option value="Anime" data-i18n="type-anime">Anime</option>
+                    <option value="Manga" data-i18n="type-manga">Manga</option>
+                    <option value="Film" data-i18n="type-film">Film</option>
+                    <option value="Series" data-i18n="type-series">Series</option>
+                    <option value="Book" data-i18n="type-book">Book</option>
+                </select>
+                <select id="entry-status" class="aero-select">
+                    <option value="watching" data-i18n="stat-watching">Watching</option>
+                    <option value="reading" data-i18n="stat-reading">Reading</option>
+                    <option value="plan" data-i18n="stat-plan">Plan</option>
+                    <option value="completed" data-i18n="stat-completed">Completed</option>
+                </select>
+            </div>
+            
+            <select id="entry-theme" class="aero-select">
+                <option value="theme-aero">Theme: Default Aero</option>
+                <option value="theme-image-focus">Theme: Image Focus (Full Cover)</option>
+                <option value="theme-jjk">Theme: Jujutsu Kaisen</option>
+                <option value="theme-bluelock">Theme: Blue Lock</option>
+                <option value="theme-naruto">Theme: Naruto</option>
+                <option value="theme-aot">Theme: Attack on Titan</option>
+                <option value="theme-onepiece">Theme: One Piece</option>
+                <option value="theme-dragonball">Theme: Dragon Ball</option>
+                <option value="theme-demonslayer">Theme: Demon Slayer</option>
+                <option value="theme-evangelion">Theme: Evangelion</option>
+            </select>
+            
+            <div class="row-inputs">
+                <input type="number" id="entry-progress" placeholder="Current Ep/Ch" value="0" min="0">
+                <input type="number" id="entry-total" placeholder="Total Ep/Ch" value="12" min="1">
+            </div>
+
+            <input type="number" id="entry-rating" placeholder="Rating (0-5 Stars)" value="0" min="0" max="5">
+
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <button class="modal-btn btn-cancel" onclick="closeModal()" data-i18n="btn-cancel">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="submitEntry()" id="submit-btn" data-i18n="btn-add">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2><i class="fa-solid fa-sliders"></i> <span data-i18n="settings-title">System Settings</span></h2>
+            
+            <div class="settings-group">
+                <label><i class="fa-solid fa-palette"></i> Global Theme</label>
+                <select id="global-theme-select" class="aero-select" onchange="changeGlobalTheme(this.value)">
+                    <option value="default">iOS 26 Blue (Aero)</option>
+                    <option value="sakura">Sakura Blossom</option>
+                    <option value="midnight">Midnight Mode</option>
+                    <option value="forest">Forest Breeze</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label><i class="fa-solid fa-music"></i> BGM Volume</label>
+                <input type="range" id="bgm-volume" min="0" max="100" value="40" onchange="changeBGMVolume(this.value)">
+            </div>
+            <div class="potato-toggle-container" style="margin-top:0;">
+                <span><i class="fa-solid fa-wave-square"></i> Spatial Reverb Effect</span>
+                <input type="checkbox" id="reverb-toggle" onchange="toggleReverb(this.checked)" style="width: 20px; height: 20px;">
+            </div>
+            
+            <div class="settings-group" style="margin-top: 15px;">
+                <label><i class="fa-solid fa-cloud-sun"></i> Weather Intensity</label>
+                <input type="range" id="weather-intensity" min="10" max="100" value="50" onchange="changeWeatherIntensity(this.value)">
+            </div>
+            <div class="potato-toggle-container" style="margin-top:0;">
+                <span><i class="fa-solid fa-bolt"></i> Potato Mode (Fix Lag)</span>
+                <input type="checkbox" id="potato-toggle" onchange="togglePotatoMode(this.checked)" style="width: 20px; height: 20px;">
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 25px;">
+                <button class="modal-btn btn-confirm" onclick="closeSettings()" style="width: 100%;">Apply & Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/core.js"></script>
+    <script src="js/library.js"></script>
+</body>
+</html>
